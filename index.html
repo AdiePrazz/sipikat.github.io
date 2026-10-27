@@ -19,7 +19,7 @@ html{color-scheme:light}body{margin:0}
   --paper:#FFFFFF; --paper-ink:#141414; --paper-mute:#8A8A8A; --paper-line:#141414;
   --font-ui:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
   --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
-  --font-doc:Arial,'Liberation Sans',Helvetica,sans-serif;
+  --font-doc:'Times New Roman',Times,'Liberation Serif',serif;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -365,12 +365,12 @@ function fitPages(){
 function renderPreview(){}
 
 /* ---------- PDF ---------- */
-function buildPdf(rec){
+function layoutPdf(rec, FS, FACT){
   var J = window.jspdf; if(!J) throw new Error('pdf');
   var d = new J.jsPDF({unit:'mm', format:'a4'});
-  var L = 20, R = 190, W = R - L, BOT = 280, PT = 0.3528, LH = 12 * 1.5 * PT, SL = 12 * 1.15 * PT, y = 18;
+  var L = 20, R = 190, W = R - L, BOT = 280, PT = 0.3528, LH = FS * FACT * PT, SL = FS * 1.15 * PT, y = 15;
   var g = rec.pemberi || {}, t = rec.tgl ? parseISO(rec.tgl) : new Date();
-  function base(){ d.setFont('helvetica', 'normal'); d.setFontSize(12); d.setTextColor(0); }
+  function base(){ d.setFont('times', 'normal'); d.setFontSize(FS); d.setTextColor(0); }
   function need(h){ if(y + h > BOT){ d.addPage(); y = 20; base(); } }
   function block(text, align, lh){
     var lines = d.splitTextToSize(text, W);
@@ -389,44 +389,56 @@ function buildPdf(rec){
     d.splitTextToSize(s, R - 98).forEach(function(l){ d.text(l, 98, y, {}); y += SL; });
   });
   y += 4;
-  var cy = y + 11;
-  if(LOGO_DATA_URL){ d.addImage(LOGO_DATA_URL, 'PNG', 94, y, 22, 22); }
+  var cy = y + 10;
+  if(LOGO_DATA_URL){ d.addImage(LOGO_DATA_URL, 'PNG', 95, y, 20, 20); }
   else { d.setDrawColor(150); d.setLineWidth(0.25); d.circle(105, cy, 11); d.setFontSize(7); d.setTextColor(130); d.text('LOGO KPU', 105, cy + 0.8, {align:'center'}); base(); }
   d.setDrawColor(0); d.setLineWidth(0.25); d.rect(R - 52, cy - 7.25, 52, 14.5);
   d.text('Model A-Tanggapan', R - 26, cy - 1.3, {align:'center'}); d.text('Masyarakat-PDPB', R - 26, cy + 3.6, {align:'center'});
-  y += 22 + 8;
+  y += 20 + 6;
   block('FORMULIR TANGGAPAN DAN MASUKAN MASYARAKAT\nTERHADAP PEMUTAKHIRAN DATA PEMILIH BERKELANJUTAN (PDPB)', 'center', LH); y += 2;
   block('KPU ' + (rec.kpu || '') + ' pada hari ' + HARI[t.getDay()] + ' tanggal ' + t.getDate() + ' bulan ' + BULAN[t.getMonth()] + ' tahun ' + t.getFullYear() + ' tanggapan dan masukan terhadap Pemutakhiran Data Pemilih Berkelanjutan dari:', 'justify', LH); y += 2;
   block('NIK: ' + (g.nik || ''), 'left', LH); y += 2; block('Nama: ' + (g.nama || ''), 'left', LH); y += 2; block('Alamat: ' + (g.alamat || ''), 'left', LH); y += 2;
   block('Materi/alasan memberikan tanggapan/masukan karena:', 'left', LH);
   [1,2,3].forEach(function(n){ need(LH); d.text(rec.alasan === n ? '[ X ]' : '[    ]', L, y); d.text(n + '. ' + ALASAN[n], L + 14, y); y += LH; });
   y += 2; block('Materi tanggapan dan masukan adalah sebagai berikut:', 'left', LH); y += 1;
-  var w1 = 52, w2 = 6, w3 = W - w1 - w2;
+  var w1 = 56, w2 = 6, w3 = W - w1 - w2;
   rowsOf(rec).forEach(function(r){
-    var vl = d.splitTextToSize(r[1] || '', w3 - 4), ll = d.splitTextToSize(r[0], w1 - 4), n = Math.max(1, vl.length, ll.length), h = n * SL + 2.4;
+    var vl = d.splitTextToSize(r[1] || '', w3 - 4), ll = d.splitTextToSize(r[0], w1 - 4), n = Math.max(1, vl.length, ll.length), h = n * SL + 1.4;
     need(h + 4); var top = y - 4;
     d.rect(L, top, w1, h); d.rect(L + w1, top, w2, h); d.rect(L + w1 + w2, top, w3, h);
-    d.text(ll, L + 2, top + 4.6, {lineHeightFactor:1.15}); d.text(':', L + w1 + w2 / 2, top + 4.6, {align:'center'}); d.text(vl, L + w1 + w2 + 2, top + 4.6, {lineHeightFactor:1.15});
+    d.text(ll, L + 2, top + 4.1, {lineHeightFactor:1.15}); d.text(':', L + w1 + w2 / 2, top + 4.1, {align:'center'}); d.text(vl, L + w1 + w2 + 2, top + 4.1, {lineHeightFactor:1.15});
     y = top + h + 4;
   });
   y += LH - 4 + 2;
   block('Demikian masukan dan tanggapan ini dibuat dengan sebenar-benarnya dan untuk digunakan sebagai bukti perbaikan Data Pemilih Berkelanjutan.', 'justify', LH);
-  need(66); y += 4;
+  need(50); y += 2;
   var kota = (rec.kpu || '').replace(/^(kabupaten|kota)\s+/i, '');
   d.splitTextToSize(kota + ', ' + t.getDate() + ' ' + BULAN[t.getMonth()] + ' Tahun ' + t.getFullYear(), 82).forEach(function(l){ d.text(l, 148, y, {align:'center'}); y += SL; });
   d.text('KPU ' + (rec.kpu || 'Kabupaten/Kota'), 62, y, {align:'center'}); d.text('Pemberi Masukan/Tanggapan', 148, y, {align:'center'});
-  d.setFont('helvetica', 'italic'); d.setFontSize(9); d.setTextColor(110); d.text('Disetujui secara elektronik', 148, y + 13, {align:'center'}); base();
-  d.text('(.................................)', 62, y + 26, {align:'center'});
-  var nm = d.splitTextToSize('(' + (g.nama || '.................................') + ')', 82); d.text(nm, 148, y + 26, {align:'center', lineHeightFactor:1.15});
-  y += 26 + nm.length * SL + 8; need(34);
+  d.setFont('times', 'italic'); d.setFontSize(9); d.setTextColor(110); d.text('Disetujui secara elektronik', 148, y + 11, {align:'center'}); base();
+  d.text('(.................................)', 62, y + 21, {align:'center'});
+  var nm = d.splitTextToSize('(' + (g.nama || '.................................') + ')', 82); d.text(nm, 148, y + 21, {align:'center', lineHeightFactor:1.15});
+  y += 21 + nm.length * SL + 6; need(26);
   var ky = y; base();
   d.splitTextToSize('KETUA KOMISI PEMILIHAN UMUM,', 86).forEach(function(l){ d.text(l, 147, ky, {align:'center'}); ky += SL; });
-  var kb = ky - SL; d.text('ttd.', 147, kb + 12, {align:'center'}); d.text('MOCHAMMAD AFIFUDDIN', 147, kb + 24, {align:'center'});
-  d.setFont('helvetica', 'italic'); d.setFontSize(10);
+  var kb = ky - SL; d.text('ttd.', 147, kb + 10, {align:'center'}); d.text('MOCHAMMAD AFIFUDDIN', 147, kb + 20, {align:'center'});
+  d.setFont('times', 'italic'); d.setFontSize(10);
   var fy = y; d.splitTextToSize('* Wajib melampirkan bukti identitas Kependudukan atau surat keterangan lainnya dari Pemerintah', 80).forEach(function(l){ d.text(l, L, fy); fy += 4.6; });
   base();
   if(rec.ticket){ d.setPage(d.getNumberOfPages()); d.setFont('courier', 'normal'); d.setFontSize(8); d.setTextColor(110); d.text('No. tiket ' + rec.ticket, R, 289, {align:'right'}); }
   return d;
+}
+
+/* Muat dalam 1 halaman: pertahankan 12 pt dan rapatkan jarak baris dari 1,5 menuju 1,0; jika belum muat, kecilkan huruf sedikit demi sedikit. */
+function buildPdf(rec){
+  var last = null, sizes = [12, 11.5, 11, 10.5, 10], k, f;
+  for(k = 0; k < sizes.length; k++){
+    for(f = 1.5; f >= 0.999; f -= 0.05){
+      last = layoutPdf(rec, sizes[k], f); last._cfg = [sizes[k], Math.round(f * 100) / 100];
+      if(last.getNumberOfPages() === 1) return last;
+    }
+  }
+  return last;
 }
 
 /* ---------- pengiriman ---------- */
