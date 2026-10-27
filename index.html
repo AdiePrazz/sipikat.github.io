@@ -431,7 +431,7 @@ function buildPdf(rec){
 
 /* ---------- pengiriman ---------- */
 /* Isi dengan alamat Web App dari Apps Script (lihat PANDUAN-PASANG.md). Selama kosong, form berjalan dalam mode contoh dan tidak mengirim apa pun. */
-var ENDPOINT = 'https://script.google.com/macros/s/AKfycbw3xpdB0N7AYIRhE9ljFbk0cWnLqbF2Fg54LGZfejnM9Ys8mIHfZ_Lt-WD2dDtVILzG/exec';
+var ENDPOINT = 'https://script.google.com/macros/s/AKfycbzN8GNMaHwf7FqelpR_YL3SBNPx4KsJ-6RDNhpU6HYmVN3naeRPrIsiONiqHznDuJY6/exec';
 var fileObj = null, startedAt = Date.now();
 function toast(m){ var t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function(){ t.hidden = true; }, 4200); }
 function newTicket(){ var a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s = '', i, buf = new Uint8Array(4); (window.crypto || {getRandomValues:function(b){ for(i=0;i<b.length;i++) b[i]=Math.floor(Math.random()*256); }}).getRandomValues(buf); for(i = 0; i < 4; i++) s += a[buf[i] % a.length]; return 'PDPB-' + TODAY.replace(/-/g,'') + '-' + s; }
