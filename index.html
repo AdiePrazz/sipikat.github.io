@@ -54,7 +54,10 @@ button,input,select,textarea{font:inherit;color:inherit}
 .count:empty{display:none}
 
 .split{max-width:680px;margin:0 auto}
-.cek{margin-top:28px;padding:22px}
+.cek{padding:22px}
+a.btn{display:inline-flex;align-items:center;text-decoration:none;color:var(--ink)}
+#head-cek .btn{margin-bottom:16px}
+#head-cek[hidden],#head-form[hidden],#view-form[hidden],#view-cek[hidden]{display:none}
 .cek h2{margin-bottom:4px}
 .cek .lead{color:var(--muted);font-size:.9rem;margin-bottom:16px}
 .cek .grid{align-items:end}
@@ -170,20 +173,29 @@ table.sheet{border-collapse:collapse;width:100%;min-width:1040px;font-size:.86re
 <body>
 <div class="wrap">
   <header class="top">
-    <div>
+    <div id="head-form">
       <h1>Form Tanggapan dan Masukan Masyarakat</h1>
       <p class="sub">KPU Kabupaten Malang. Pemutakhiran Data Pemilih Berkelanjutan (PDPB). Isi form berikut. Tanggapan Anda diteruskan ke helpdesk KPU dan Anda mendapat dokumen Model A-Tanggapan Masyarakat-PDPB untuk diunduh.</p>
       <a class="toplink" href="#cek">Sudah mengirim? Cek status tanggapan</a>
     </div>
-    
+    <div id="head-cek" hidden>
+      <a class="btn" href="#formulir">&larr; Kembali ke form tanggapan</a>
+      <h1>Cek Status Tanggapan</h1>
+      <p class="sub">KPU Kabupaten Malang. Pemutakhiran Data Pemilih Berkelanjutan (PDPB).</p>
+    </div>
   </header>
 
-  <main id="view-form" role="tabpanel" aria-labelledby="tab-form">
+  <main id="view-form">
     <div class="split">
       <div>
         <div class="card" id="doneCard" hidden></div>
         <form class="card" id="theForm" novalidate autocomplete="off"></form>
       </div>
+    </div>
+  </main>
+
+  <main id="view-cek" hidden>
+    <div class="split">
       <section class="card cek" id="cek" aria-labelledby="cekH">
         <h2 id="cekH">Cek status tanggapan</h2>
         <p class="lead">Masukkan nomor tiket dan 4 digit terakhir NIK pemberi masukan.</p>
@@ -192,7 +204,7 @@ table.sheet{border-collapse:collapse;width:100%;min-width:1040px;font-size:.86re
             <div class="fld"><label for="ck_ticket">Nomor tiket</label><input type="text" id="ck_ticket" placeholder="PDPB-20261027-ABCD" maxlength="18" autocapitalize="characters" spellcheck="false"></div>
             <div class="fld"><label for="ck_nik4">4 digit terakhir NIK</label><input type="text" id="ck_nik4" inputmode="numeric" maxlength="4" placeholder="0000"></div>
           </div>
-          <div class="row"><button class="btn primary" type="submit" id="ck_btn">Cek status</button></div>
+          <div class="row"><button class="btn primary" type="submit" id="ck_btn">Cek status</button><a class="btn" href="#formulir">Kembali ke form</a></div>
         </form>
         <div class="hasil" id="ck_hasil" role="status" aria-live="polite" hidden></div>
       </section>
@@ -551,8 +563,18 @@ function initCek(){
       .then(function(){ btn.disabled = false; btn.textContent = 'Cek status'; });
   });
 }
+var TITLE_FORM = 'Form Tanggapan PDPB - KPU Kabupaten Malang', TITLE_CEK = 'Cek Status Tanggapan PDPB - KPU Kabupaten Malang';
+function route(noScroll){
+  var cek = location.hash === '#cek';
+  $('view-form').hidden = cek; $('head-form').hidden = cek;
+  $('view-cek').hidden = !cek; $('head-cek').hidden = !cek;
+  document.title = cek ? TITLE_CEK : TITLE_FORM;
+  if(noScroll !== true) window.scrollTo(0, 0);
+}
 function init(){
   buildForm(); updateDerived(); renderPreview(); initCek();
+  window.addEventListener('hashchange', function(){ route(); });
+  route(true);
   var form = $('theForm');
   form.addEventListener('input', onField); form.addEventListener('change', onField);
   form.addEventListener('focusout', function(e){ if(e.target.id){ touched[e.target.id] = true; showErrors(); } });
