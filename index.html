@@ -53,8 +53,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 .count{font-family:var(--font-mono);font-size:.75rem;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:0 7px;min-width:20px;text-align:center}
 .count:empty{display:none}
 
-.split{display:grid;grid-template-columns:minmax(0,1fr);gap:28px}
-@media (min-width:1000px){.split{grid-template-columns:minmax(0,540px) minmax(0,1fr)}.preview-col{align-self:start}}
+.split{max-width:680px;margin:0 auto}
+.top{max-width:680px;margin-left:auto;margin-right:auto}
+.top .sub{max-width:none}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
 .sec{padding:22px 22px 6px;border-bottom:1px solid var(--line)}
 .sec:last-of-type{border-bottom:0}
@@ -158,7 +159,7 @@ table.sheet{border-collapse:collapse;width:100%;min-width:1040px;font-size:.86re
   <header class="top">
     <div>
       <h1>Form Tanggapan dan Masukan Masyarakat</h1>
-      <p class="sub">KPU Kabupaten Malang. Pemutakhiran Data Pemilih Berkelanjutan (PDPB). Isian Anda menjadi dokumen Model A-Tanggapan Masyarakat-PDPB dan diteruskan ke helpdesk KPU.</p>
+      <p class="sub">KPU Kabupaten Malang. Pemutakhiran Data Pemilih Berkelanjutan (PDPB). Isi form berikut. Tanggapan Anda diteruskan ke helpdesk KPU dan Anda mendapat dokumen Model A-Tanggapan Masyarakat-PDPB untuk diunduh.</p>
     </div>
     
   </header>
@@ -169,10 +170,6 @@ table.sheet{border-collapse:collapse;width:100%;min-width:1040px;font-size:.86re
         <div class="card" id="doneCard" hidden></div>
         <form class="card" id="theForm" novalidate autocomplete="off"></form>
       </div>
-      <aside class="preview-col" aria-label="Pratinjau Model A">
-        <div class="pv-head"><h2>Pratinjau Model A</h2><span id="pvState">Berubah saat Anda mengetik</span></div>
-        <div id="paper"></div>
-      </aside>
     </div>
   </main>
 
@@ -365,11 +362,7 @@ function fitPages(){
     var s = b.clientWidth / 794; p.style.transform = 'scale(' + s + ')'; b.style.height = Math.round(p.offsetHeight * s + 2) + 'px';
   });
 }
-function renderPreview(){
-  var rec = submitted || collect();
-  $('paper').innerHTML = modelA(rec); fitPages();
-  $('pvState').textContent = submitted ? 'Dokumen terkirim' : 'Berubah saat Anda mengetik';
-}
+function renderPreview(){}
 
 /* ---------- PDF ---------- */
 function buildPdf(rec){
@@ -496,7 +489,7 @@ function init(){
     (demo ? Promise.resolve({ok:true}) : send(rec, 0)).then(function(){
       submitted = rec; renderPreview(); form.hidden = true;
       var dc = $('doneCard'); dc.hidden = false;
-      dc.innerHTML = '<div class="done"><h2>Tanggapan terkirim</h2><div class="ticket">' + esc(rec.ticket) + '</div><p>Simpan nomor tiket ini. Helpdesk KPU Kabupaten Malang akan memeriksa tanggapan Anda dan menindaklanjutinya. Dokumen Model A di samping sudah terisi sesuai data Anda; unduh sebagai bukti.</p>' + (demo ? '<p class="fine">Mode contoh: alamat server belum diatur, jadi data ini tidak dikirim ke mana pun.</p>' : '') + '<div class="row"><button class="btn primary" type="button" id="dlPdf">Unduh PDF Model A</button><button class="btn" type="button" id="again">Isi tanggapan lain</button></div></div>';
+      dc.innerHTML = '<div class="done"><h2>Tanggapan terkirim</h2><div class="ticket">' + esc(rec.ticket) + '</div><p>Simpan nomor tiket ini. Helpdesk KPU Kabupaten Malang akan memeriksa tanggapan Anda dan menindaklanjutinya. Unduh dokumen Model A yang sudah terisi sesuai data Anda sebagai bukti.</p>' + (demo ? '<p class="fine">Mode contoh: alamat server belum diatur, jadi data ini tidak dikirim ke mana pun.</p>' : '') + '<div class="row"><button class="btn primary" type="button" id="dlPdf">Unduh PDF Model A</button><button class="btn" type="button" id="again">Isi tanggapan lain</button></div></div>';
       $('dlPdf').onclick = function(){ pdfFor(rec); }; $('again').onclick = function(){ btn.disabled = false; btn.textContent = 'Kirim tanggapan'; resetForm(); };
       dc.scrollIntoView({block:'start'});
     }).catch(function(err){
@@ -505,8 +498,7 @@ function init(){
     });
   });
   window.addEventListener('resize', fitPages);
-  if(window.ResizeObserver){ new ResizeObserver(fitPages).observe($('paper')); }
-  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(fitPages); }
+    if(document.fonts && document.fonts.ready){ document.fonts.ready.then(fitPages); }
   fitPages();
 }
 init();
